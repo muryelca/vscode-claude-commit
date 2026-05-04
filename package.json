@@ -2,7 +2,7 @@
   "name": "dj-claude-commit",
   "displayName": "DJ Claude Commit",
   "description": "Generate Conventional Commit messages using Claude AI — one click in the Source Control panel.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "muryelca",
   "license": "MIT",
   "repository": {
@@ -58,6 +58,7 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "prepackage": "node scripts/bump-version.mjs",
     "package": "vsce package"
   },
   "devDependencies": {
