@@ -1,0 +1,72 @@
+{
+  "name": "dj-claude-commit",
+  "displayName": "DJ Claude Commit",
+  "description": "Generate Conventional Commit messages using Claude AI — one click in the Source Control panel.",
+  "version": "1.0.0",
+  "publisher": "muryelca",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muryelcabral/vscode-claude-commit"
+  },
+  "icon": "images/icon.png",
+  "keywords": [
+    "git",
+    "commit",
+    "ai",
+    "claude",
+    "conventional commits"
+  ],
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeCommit.generate",
+        "title": "Generate Commit Message (Claude)",
+        "icon": "$(sparkle)"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "claudeCommit.generate",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Claude Commit",
+      "properties": {
+        "claudeCommit.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Anthropic API key (sk-ant-...). Get yours at https://console.anthropic.com/settings/api-keys"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.87.0"
+  }
+}
