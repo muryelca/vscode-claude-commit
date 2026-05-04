@@ -47,10 +47,10 @@
     "configuration": {
       "title": "Claude Commit",
       "properties": {
-        "claudeCommit.anthropicApiKey": {
+        "claudeCommit.oauthToken": {
           "type": "string",
           "default": "",
-          "description": "Anthropic API key (sk-ant-...). Get yours at https://console.anthropic.com/settings/api-keys"
+          "description": "Claude Code OAuth token (sk-ant-oat01-...). Generate one by running `claude setup-token` in your terminal. If empty, the extension reads from the CLAUDE_CODE_OAUTH_TOKEN environment variable."
         }
       }
     }

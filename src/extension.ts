@@ -4,22 +4,33 @@ import Anthropic from '@anthropic-ai/sdk';
 const CONVENTIONAL_COMMIT_RE =
   /^(feat|fix|chore|docs|refactor|test|style|ci|perf|build|revert)(\([^)]+\))?: .+$/m;
 
+const CLAUDE_CODE_SYSTEM_PROMPT = "You are Claude Code, Anthropic's official CLI for Claude.";
+
 function extractCommitMessage(raw: string): string {
   const match = raw.match(CONVENTIONAL_COMMIT_RE);
   return match ? match[0].trim() : raw.split('\n').find((l) => l.trim().length > 0) ?? raw.trim();
 }
 
-async function generateCommitMessage(diff: string, apiKey: string): Promise<string> {
-  const client = new Anthropic({ apiKey });
+async function generateCommitMessage(diff: string, oauthToken: string): Promise<string> {
+  const client = new Anthropic({
+    authToken: oauthToken,
+    defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' },
+  });
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 100,
-    system:
-      'You are a git commit message generator. ' +
-      'Output ONLY the commit message, one single line, no explanation, no markdown, no quotes. ' +
-      'Follow Conventional Commits: type(scope): description. ' +
-      'Types: feat, fix, chore, docs, refactor, test, style, ci, perf, build, revert.',
+    system: [
+      { type: 'text', text: CLAUDE_CODE_SYSTEM_PROMPT },
+      {
+        type: 'text',
+        text:
+          'You are a git commit message generator. ' +
+          'Output ONLY the commit message, one single line, no explanation, no markdown, no quotes. ' +
+          'Follow Conventional Commits: type(scope): description. ' +
+          'Types: feat, fix, chore, docs, refactor, test, style, ci, perf, build, revert.',
+      },
+    ],
     messages: [
       {
         role: 'user',
@@ -32,20 +43,35 @@ async function generateCommitMessage(diff: string, apiKey: string): Promise<stri
   return extractCommitMessage(text);
 }
 
+async function resolveOAuthToken(
+  config: vscode.WorkspaceConfiguration
+): Promise<string | undefined> {
+  const fromConfig = config.get<string>('oauthToken')?.trim();
+  if (fromConfig) return fromConfig;
+
+  const fromEnv = process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim();
+  if (fromEnv) return fromEnv;
+
+  const entered = await vscode.window.showInputBox({
+    prompt: 'Enter your Claude Code OAuth token (run `claude setup-token` to generate one)',
+    password: true,
+    placeHolder: 'sk-ant-oat01-...',
+    validateInput: (v) =>
+      v && !v.startsWith('sk-ant-oat')
+        ? 'Expected an OAuth token starting with sk-ant-oat...'
+        : undefined,
+  });
+  if (!entered) return undefined;
+
+  await config.update('oauthToken', entered, vscode.ConfigurationTarget.Global);
+  return entered;
+}
+
 export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('claudeCommit.generate', async () => {
     const config = vscode.workspace.getConfiguration('claudeCommit');
-    let apiKey: string | undefined = config.get<string>('anthropicApiKey');
-
-    if (!apiKey) {
-      apiKey = await vscode.window.showInputBox({
-        prompt: 'Enter your Anthropic API key',
-        password: true,
-        placeHolder: 'sk-ant-...',
-      });
-      if (!apiKey) return;
-      await config.update('anthropicApiKey', apiKey, vscode.ConfigurationTarget.Global);
-    }
+    const oauthToken = await resolveOAuthToken(config);
+    if (!oauthToken) return;
 
     const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
     const api = gitExtension?.getAPI(1);
@@ -70,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
           }
 
-          const message = await generateCommitMessage(diff, apiKey!);
+          const message = await generateCommitMessage(diff, oauthToken);
           repo.inputBox.value = message;
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err);

@@ -4,7 +4,14 @@ Generate [Conventional Commit](https://www.conventionalcommits.org/) messages wi
 
 ## Requirements
 
-- [Claude Code CLI](https://claude.ai/code) installed and authenticated (`claude --version` must work in your terminal)
+- A Claude Code OAuth token. Generate one by running `claude setup-token` in your terminal (requires the [Claude Code CLI](https://claude.ai/code)).
+
+## Setup
+
+Provide the OAuth token using either of these methods:
+
+1. **VS Code setting** (recommended): Open settings and set `claudeCommit.oauthToken` to your `sk-ant-oat01-...` token. The first time you run the command without a configured token, the extension will prompt you and store it for you.
+2. **Environment variable**: Export `CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat01-...` before launching VS Code. Used as a fallback when the setting is empty.
 
 ## Usage
 
@@ -14,7 +21,7 @@ Generate [Conventional Commit](https://www.conventionalcommits.org/) messages wi
 
 ## How it works
 
-The extension pipes your staged diff (`git diff --staged`) to the Claude CLI and extracts a single-line Conventional Commit message from the response.
+The extension reads your staged diff via the VS Code Git API and sends it to the Anthropic Messages API using your Claude Code OAuth token (Bearer auth + the `oauth-2025-04-20` beta header). The response is sanitized to a single Conventional Commit line.
 
 **Model used:** `claude-haiku-4-5` for fast responses.
 
