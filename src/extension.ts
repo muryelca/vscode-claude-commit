@@ -67,15 +67,49 @@ async function resolveOAuthToken(
   return entered;
 }
 
+async function pickRepository(
+  api: any,
+  scmArg?: vscode.SourceControl
+): Promise<any | undefined> {
+  const repos: any[] = api?.repositories ?? [];
+  if (repos.length === 0) return undefined;
+
+  if (scmArg?.rootUri) {
+    const target = scmArg.rootUri.toString();
+    const match = repos.find((r) => r.rootUri?.toString() === target);
+    if (match) return match;
+  }
+
+  if (repos.length === 1) return repos[0];
+
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  if (activeUri && typeof api.getRepository === 'function') {
+    const fromEditor = api.getRepository(activeUri);
+    if (fromEditor) return fromEditor;
+  }
+
+  const items = repos.map((r) => ({
+    label: r.rootUri ? vscode.workspace.asRelativePath(r.rootUri, true) : 'Unknown',
+    description: r.rootUri?.fsPath,
+    repo: r,
+  }));
+  const picked = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Select a repository to generate a commit message for',
+  });
+  return picked?.repo;
+}
+
 export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('claudeCommit.generate', async () => {
+  const disposable = vscode.commands.registerCommand(
+    'claudeCommit.generate',
+    async (scmArg?: vscode.SourceControl) => {
     const config = vscode.workspace.getConfiguration('claudeCommit');
     const oauthToken = await resolveOAuthToken(config);
     if (!oauthToken) return;
 
     const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
     const api = gitExtension?.getAPI(1);
-    const repo = api?.repositories[0];
+    const repo = await pickRepository(api, scmArg);
 
     if (!repo) {
       vscode.window.showErrorMessage('No git repository found.');
@@ -104,7 +138,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
       }
     );
-  });
+    }
+  );
 
   context.subscriptions.push(disposable);
 }
