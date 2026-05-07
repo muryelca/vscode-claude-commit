@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-07
+
+### Fixed
+
+- Multi-root workspaces: the sparkle button now generates the commit message for the repository whose Source Control panel was clicked, instead of always using the first repository in the workspace. When invoked from the Command Palette with multiple repos, the active editor's repo is used; otherwise a quick-pick lets you choose.
+
 ## [1.0.0] - 2026-05-04
 
 ### Added
@@ -18,5 +24,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Bearer auth using a Claude Code OAuth token plus the `anthropic-beta: oauth-2025-04-20` header.
 - Progress indicator in the Source Control area while a message is being generated.
 
-[Unreleased]: https://github.com/muryelcabral/vscode-claude-commit/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/muryelcabral/vscode-claude-commit/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/muryelcabral/vscode-claude-commit/compare/v1.0.0...v1.3.0
 [1.0.0]: https://github.com/muryelcabral/vscode-claude-commit/releases/tag/v1.0.0

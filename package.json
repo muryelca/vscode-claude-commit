@@ -2,7 +2,7 @@
   "name": "dj-claude-commit",
   "displayName": "DJ Claude Commit",
   "description": "Generate Conventional Commit messages using Claude AI — one click in the Source Control panel.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "publisher": "muryelca",
   "license": "MIT",
   "repository": {
